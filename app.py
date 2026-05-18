@@ -7,7 +7,13 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dineease_super_secret_key_12345'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dineease.db'
+
+# Vercel provides a read-only filesystem, except for /tmp
+if os.environ.get('VERCEL') == '1':
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/dineease.db'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dineease.db'
+    
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -27,6 +33,42 @@ def inject_cart_count():
     cart = session.get('cart', {})
     cart_count = sum(cart.values())
     return dict(cart_count=cart_count)
+
+@app.before_request
+def initialize_vercel_db():
+    # Auto-initialize database on Vercel cold starts
+    if os.environ.get('VERCEL') == '1' and not getattr(app, '_vercel_db_initialized', False):
+        try:
+            db.create_all()
+            if not User.query.filter_by(email='admin@dineease.com').first():
+                hashed_pw = bcrypt.generate_password_hash('admin123').decode('utf-8')
+                admin = User(username='admin', email='admin@dineease.com', password=hashed_pw, role='admin')
+                db.session.add(admin)
+                
+            if not Table.query.first():
+                for i in range(1, 11):
+                    capacity = 2 if i <= 4 else (4 if i <= 8 else 6)
+                    db.session.add(Table(table_number=i, capacity=capacity))
+                    
+            if not FoodItem.query.first():
+                mock_foods = [
+                    FoodItem(name='Classic Pancakes', description='Fluffy pancakes served with maple syrup and butter.', price=12.00, category='Breakfast', image_url='https://images.unsplash.com/photo-1528207776546-365bb710ee93?w=500', rating=4.8, diet_type='Veg'),
+                    FoodItem(name='Bacon & Eggs', description='Crispy bacon with sunny-side-up eggs.', price=14.00, category='Breakfast', image_url='https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500', rating=4.7, diet_type='Non-Veg'),
+                    FoodItem(name='Masala Dosa', description='Crispy rice crepe filled with spiced potato masala.', price=10.00, category='Breakfast', image_url='https://images.unsplash.com/photo-1589301760014-d929f39ce9b1?w=500', rating=4.9, diet_type='Veg'),
+                    FoodItem(name='Hyderabadi Chicken Biryani', description='Aromatic basmati rice cooked with tender chicken and authentic spices.', price=18.00, category='Lunch', image_url='https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500', rating=4.9, diet_type='Non-Veg'),
+                    FoodItem(name='Paneer Tikka Masala', description='Grilled cottage cheese in a spicy, flavorful sauce.', price=16.00, category='Lunch', image_url='https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500', rating=4.7, diet_type='Veg'),
+                    FoodItem(name='Grilled Salmon Salad', description='Fresh greens topped with perfectly grilled salmon.', price=20.00, category='Lunch', image_url='https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500', rating=4.6, diet_type='Non-Veg'),
+                    FoodItem(name='Truffle Risotto', description='Creamy arborio rice with black truffle shavings.', price=28.50, category='Dinner', image_url='https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500', rating=4.8, diet_type='Veg'),
+                    FoodItem(name='Wagyu Beef Steak', description='Premium grade wagyu, grilled to perfection.', price=55.00, category='Dinner', image_url='https://images.unsplash.com/photo-1544025162-d76694265947?w=500', rating=4.9, diet_type='Non-Veg'),
+                    FoodItem(name='Margherita Pizza', description='Classic wood-fired pizza with fresh mozzarella and basil.', price=18.00, category='Dinner', image_url='https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500', rating=4.7, diet_type='Veg'),
+                    FoodItem(name='Molten Lava Cake', description='Rich chocolate cake with a gooey center, served with vanilla ice cream.', price=15.00, category='Desserts', image_url='https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=500', rating=4.9, diet_type='Veg'),
+                    FoodItem(name='Signature Gold Cocktail', description='A mix of premium spirits with edible gold flakes.', price=30.00, category='Beverages', image_url='https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500', rating=4.8, diet_type='Veg')
+                ]
+                db.session.add_all(mock_foods)
+            db.session.commit()
+            app._vercel_db_initialized = True
+        except Exception as e:
+            print("Error initializing DB on Vercel:", e)
 
 # --- Routes ---
 @app.route('/')
