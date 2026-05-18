@@ -101,7 +101,9 @@ def booking():
             flash('Please fill all fields', 'danger')
 
     tables = Table.query.all()
-    return render_template('booking.html', tables=tables)
+    reservations = Reservation.query.filter_by(status='confirmed').all()
+    reservations_data = [{'table_id': r.table_id, 'date': r.date, 'time': r.time} for r in reservations]
+    return render_template('booking.html', tables=tables, reservations_data=reservations_data)
 
 @app.route('/cart')
 def cart():

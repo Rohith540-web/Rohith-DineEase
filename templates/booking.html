@@ -70,7 +70,7 @@
                 <div class="grid grid-cols-3 gap-8 pt-12 pb-16 place-items-center">
                     {% for table in tables %}
                         <div class="relative group">
-                            <div class="table-node {% if table.status == 'available' %}table-available{% else %}table-booked{% endif %}" 
+                            <div class="table-node table-available" 
                                  data-id="{{ table.id }}" 
                                  data-number="{{ table.table_number }}" 
                                  data-capacity="{{ table.capacity }}">
@@ -88,4 +88,7 @@
     </div>
 </div>
 
+<script>
+    window.existingReservations = {{ reservations_data | tojson | safe }};
+</script>
 {% endblock %}

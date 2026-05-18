@@ -96,12 +96,54 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Table Selection Logic for Booking
-    const tableNodes = document.querySelectorAll('.table-node.table-available');
+    const tableNodes = document.querySelectorAll('.table-node');
     const tableInput = document.getElementById('selected_table_id');
     const tableDisplay = document.getElementById('selected-table-display');
+    const dateInput = document.querySelector('input[name="date"]');
+    const timeInput = document.querySelector('input[name="time"]');
+
+    function updateTableAvailability() {
+        if (!dateInput || !timeInput || !window.existingReservations) return;
+        const selectedDate = dateInput.value;
+        const selectedTime = timeInput.value;
+        
+        tableNodes.forEach(node => {
+            const tableId = parseInt(node.dataset.id);
+            // Check if this table is booked for the selected date and time
+            const isBooked = window.existingReservations.some(r => r.table_id === tableId && r.date === selectedDate && r.time === selectedTime);
+            
+            if (isBooked) {
+                node.classList.remove('table-available');
+                node.classList.add('table-booked');
+                // Deselect if currently selected
+                if (node.classList.contains('table-selected')) {
+                    node.classList.remove('table-selected');
+                    tableInput.value = '';
+                    if (tableDisplay) tableDisplay.innerHTML = `<span class="text-gray-500 italic">Please select a table from the map</span>`;
+                }
+            } else {
+                node.classList.remove('table-booked');
+                node.classList.add('table-available');
+            }
+        });
+    }
+
+    if (dateInput && timeInput) {
+        dateInput.addEventListener('change', updateTableAvailability);
+        timeInput.addEventListener('change', updateTableAvailability);
+        // Run once on load just in case values are pre-filled
+        updateTableAvailability();
+    }
 
     tableNodes.forEach(node => {
         node.addEventListener('click', function() {
+            if (this.classList.contains('table-booked')) {
+                // Shake animation for feedback
+                this.classList.add('animate-bounce');
+                setTimeout(() => this.classList.remove('animate-bounce'), 500);
+                return;
+            }
+            
             // Remove selected class from all
             tableNodes.forEach(n => n.classList.remove('table-selected'));
             // Add selected class to clicked
@@ -111,9 +153,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const tableNum = this.dataset.number;
             const tableCap = this.dataset.capacity;
             
-            tableInput.value = tableId;
-            tableDisplay.innerHTML = `<span class="text-gradient-gold text-xl font-bold">Table ${tableNum}</span> <span class="text-sm text-gray-400">(${tableCap} Seats)</span>`;
-            tableDisplay.classList.add('animate-fade-in');
+            if (tableInput) tableInput.value = tableId;
+            if (tableDisplay) {
+                tableDisplay.innerHTML = `<span class="text-gradient-gold text-xl font-bold">Table ${tableNum}</span> <span class="text-sm text-gray-400">(${tableCap} Seats)</span>`;
+                tableDisplay.classList.add('animate-fade-in');
+            }
         });
     });
     
