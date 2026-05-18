@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% block title %}DineEase | Menu{% endblock %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="text-center mb-16 animate-fade-in">
+        <h1 class="text-4xl md:text-6xl font-serif font-bold mb-4">Our <span class="text-gradient-gold">Menu</span></h1>
+        <div class="w-24 h-1 bg-gradient-to-r from-[#D4AF37] to-[#FF8C00] mx-auto rounded-full"></div>
+        <p class="mt-6 text-gray-400 max-w-2xl mx-auto text-lg">Explore our exquisite selection of dishes, crafted to perfection.</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="max-w-md mx-auto mb-8 animate-fade-in delay-100">
+        <div class="relative">
+            <input type="text" id="menu-search" placeholder="Search for dishes..." class="w-full bg-black/50 border border-[#D4AF37]/50 rounded-full py-3 px-6 text-white placeholder-gray-400 focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all">
+            <div class="absolute right-4 top-3.5 text-gray-400">
+                <i class="fas fa-search"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters/Categories -->
+    <div class="flex flex-wrap justify-center gap-4 mb-6 animate-fade-in delay-100" id="menu-filters">
+        {% for cat in categories %}
+        <button data-filter="{{ cat }}" class="filter-btn px-6 py-2 rounded-full border border-gray-600 text-gray-300 hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all">{{ cat }}</button>
+        {% endfor %}
+    </div>
+
+    <!-- Diet Sub-Filters -->
+    <div class="flex justify-center gap-4 mb-12 animate-fade-in delay-150" id="diet-filters">
+        <button data-diet="all" class="diet-btn px-4 py-1 rounded-full text-sm border border-[#D4AF37] bg-[#D4AF37] text-black font-semibold transition-all">Both</button>
+        <button data-diet="Veg" class="diet-btn px-4 py-1 rounded-full text-sm border border-green-600 text-green-500 hover:bg-green-600 hover:text-white transition-all"><i class="fas fa-leaf mr-1"></i> Veg</button>
+        <button data-diet="Non-Veg" class="diet-btn px-4 py-1 rounded-full text-sm border border-red-600 text-red-500 hover:bg-red-600 hover:text-white transition-all"><i class="fas fa-drumstick-bite mr-1"></i> Non-Veg</button>
+    </div>
+
+    <!-- Menu Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="menu-grid">
+        {% for food in foods %}
+        <div class="menu-item glass-card rounded-2xl overflow-hidden group scroll-animate" data-category="{{ food.category }}" data-diet="{{ food.diet_type }}">
+            <div class="relative h-56 overflow-hidden">
+                <img src="{{ food.image_url }}" alt="{{ food.name }}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                <div class="absolute top-4 right-4 flex flex-col gap-2">
+                    <div class="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] text-sm font-semibold flex items-center justify-center gap-1">
+                        <i class="fas fa-star text-xs"></i> {{ food.rating }}
+                    </div>
+                    {% if food.diet_type == 'Veg' %}
+                    <div class="bg-green-600/80 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-semibold flex items-center justify-center shadow-lg border border-green-400/50">
+                        <i class="fas fa-leaf mr-1"></i> Veg
+                    </div>
+                    {% elif food.diet_type == 'Non-Veg' %}
+                    <div class="bg-red-600/80 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-semibold flex items-center justify-center shadow-lg border border-red-400/50">
+                        <i class="fas fa-drumstick-bite mr-1"></i> Non-Veg
+                    </div>
+                    {% endif %}
+                </div>
+                {% if not food.is_available %}
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <span class="bg-red-500 text-white px-4 py-2 rounded-full font-bold transform -rotate-12">Sold Out</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <div class="text-xs text-[#FF8C00] uppercase tracking-wider font-semibold mb-1">{{ food.category }}</div>
+                        <h3 class="text-xl font-bold text-white font-serif">{{ food.name }}</h3>
+                    </div>
+                    <span class="text-2xl font-bold text-gradient-gold">${{ "%.2f"|format(food.price) }}</span>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 line-clamp-2 h-10">{{ food.description }}</p>
+                
+                <div class="border-t border-gray-700/50 pt-4 mt-auto">
+                    <button data-id="{{ food.id }}" class="add-to-cart-btn w-full btn-outline flex justify-center items-center gap-2 {% if not food.is_available %}opacity-50 cursor-not-allowed pointer-events-none{% endif %}">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

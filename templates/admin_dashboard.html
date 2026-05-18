@@ -1,0 +1,212 @@
+{% extends "layout.html" %}
+{% block title %}DineEase | Admin Panel{% endblock %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="text-center mb-12 animate-fade-in">
+        <h1 class="text-4xl md:text-5xl font-serif font-bold mb-4">Admin <span class="text-gradient-gold">Dashboard</span></h1>
+        <div class="w-24 h-1 bg-gradient-to-r from-[#D4AF37] to-[#FF8C00] mx-auto rounded-full"></div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 animate-fade-in delay-100">
+        <div class="glass-card p-6 rounded-2xl flex items-center justify-between border-l-4 border-l-blue-500">
+            <div>
+                <p class="text-gray-400 text-sm uppercase tracking-wider mb-1">Total Users</p>
+                <h3 class="text-3xl font-bold text-white">{{ users|length }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xl">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6 rounded-2xl flex items-center justify-between border-l-4 border-l-green-500">
+            <div>
+                <p class="text-gray-400 text-sm uppercase tracking-wider mb-1">Total Orders</p>
+                <h3 class="text-3xl font-bold text-white">{{ orders|length }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xl">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6 rounded-2xl flex items-center justify-between border-l-4 border-l-[#D4AF37]">
+            <div>
+                <p class="text-gray-400 text-sm uppercase tracking-wider mb-1">Reservations</p>
+                <h3 class="text-3xl font-bold text-white">{{ reservations|length }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] text-xl">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6 rounded-2xl flex items-center justify-between border-l-4 border-l-purple-500">
+            <div>
+                <p class="text-gray-400 text-sm uppercase tracking-wider mb-1">Menu Items</p>
+                <h3 class="text-3xl font-bold text-white">{{ foods|length }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-xl">
+                <i class="fas fa-utensils"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        
+        <!-- Manage Food Items -->
+        <div class="animate-fade-in delay-200">
+            <h2 class="text-2xl font-serif font-bold text-white mb-6 border-b border-gray-700 pb-4">Manage Menu</h2>
+            
+            <!-- Add New Food Form -->
+            <div class="glass-card p-6 rounded-2xl mb-8">
+                <h3 class="text-lg font-bold text-white mb-4">Add New Item</h3>
+                <form action="{{ url_for('admin_dashboard') }}" method="POST" class="space-y-4">
+                    <!-- Since I can't easily set up complex forms inside single route without making it massive, 
+                         I will route to /admin/add_food -->
+                </form>
+                <form action="{{ url_for('add_food') }}" method="POST" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" name="name" placeholder="Food Name" required class="input-glass px-4 py-2 rounded text-sm w-full">
+                        <input type="number" step="0.01" name="price" placeholder="Price ($)" required class="input-glass px-4 py-2 rounded text-sm w-full">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <select name="category" required class="input-glass px-4 py-2 rounded text-sm w-full bg-black/50 text-white border border-gray-600 focus:border-[#D4AF37] outline-none">
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Lunch">Lunch</option>
+                            <option value="Dinner">Dinner</option>
+                            <option value="Desserts">Desserts</option>
+                            <option value="Beverages">Beverages</option>
+                        </select>
+                        <select name="diet_type" required class="input-glass px-4 py-2 rounded text-sm w-full bg-black/50 text-white border border-gray-600 focus:border-[#D4AF37] outline-none">
+                            <option value="Veg">Veg</option>
+                            <option value="Non-Veg">Non-Veg</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4">
+                        <input type="url" name="image_url" placeholder="Image URL" class="input-glass px-4 py-2 rounded text-sm w-full">
+                    </div>
+                    <textarea name="description" placeholder="Description" required class="input-glass px-4 py-2 rounded text-sm w-full h-20"></textarea>
+                    <button type="submit" class="btn-primary text-sm px-6 py-2">Add Item</button>
+                </form>
+            </div>
+
+            <!-- Existing Foods List -->
+            <div class="glass-card rounded-2xl overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-white">Active Items</h3>
+                    <div class="relative w-64">
+                        <input type="text" id="admin-menu-search" placeholder="Search items..." class="w-full bg-black/50 border border-gray-600 rounded-lg py-2 px-4 text-white text-sm focus:outline-none focus:border-[#D4AF37]">
+                        <i class="fas fa-search absolute right-3 top-2.5 text-gray-500 text-sm"></i>
+                    </div>
+                </div>
+                <table class="w-full text-sm text-left text-gray-400" id="admin-menu-table">
+                    <thead class="text-xs text-gray-300 uppercase bg-black/50 border-b border-gray-700">
+                        <tr>
+                            <th class="px-6 py-3">Item</th>
+                            <th class="px-6 py-3">Category</th>
+                            <th class="px-6 py-3">Diet</th>
+                            <th class="px-6 py-3">Price</th>
+                            <th class="px-6 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for food in foods %}
+                        <tr class="border-b border-gray-700/50 hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-medium text-white">{{ food.name }}</td>
+                            <td class="px-6 py-4">{{ food.category }}</td>
+                            <td class="px-6 py-4">
+                                {% if food.diet_type == 'Veg' %}
+                                <span class="text-green-500"><i class="fas fa-leaf"></i> Veg</span>
+                                {% else %}
+                                <span class="text-red-500"><i class="fas fa-drumstick-bite"></i> Non-Veg</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">${{ "%.2f"|format(food.price) }}</td>
+                            <td class="px-6 py-4">
+                                <form action="{{ url_for('delete_food', id=food.id) }}" method="POST" class="inline">
+                                    <button type="submit" class="text-red-500 hover:text-red-400" title="Remove"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Removed Foods List -->
+            <div class="mt-12 glass-card rounded-2xl overflow-hidden">
+                <h3 class="text-lg font-bold text-white p-6 border-b border-gray-700">Removed Items</h3>
+                <table class="w-full text-sm text-left text-gray-400">
+                    <thead class="text-xs text-gray-300 uppercase bg-black/50 border-b border-gray-700">
+                        <tr>
+                            <th class="px-6 py-3">Item</th>
+                            <th class="px-6 py-3">Category</th>
+                            <th class="px-6 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for food in removed_foods %}
+                        <tr class="border-b border-gray-700/50 hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-medium text-gray-500">{{ food.name }}</td>
+                            <td class="px-6 py-4 text-gray-500">{{ food.category }}</td>
+                            <td class="px-6 py-4">
+                                <form action="{{ url_for('restore_food', id=food.id) }}" method="POST" class="inline">
+                                    <button type="submit" class="text-green-500 hover:text-green-400 btn-outline text-xs px-2 py-1"><i class="fas fa-undo"></i> Restore</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-center text-gray-500">No removed items.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="animate-fade-in delay-300">
+            <h2 class="text-2xl font-serif font-bold text-white mb-6 border-b border-gray-700 pb-4">Recent Activity</h2>
+            
+            <div class="space-y-6">
+                <!-- Recent Orders -->
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold text-white mb-4">Recent Orders</h3>
+                    <div class="space-y-3">
+                        {% for order in orders[:5] %}
+                        <div class="flex justify-between items-center text-sm border-b border-gray-700/30 pb-2 last:border-0">
+                            <div>
+                                <span class="text-white">Order #{{ order.id }}</span>
+                                <span class="text-gray-500 ml-2">by {{ order.user.username }}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[#D4AF37] font-bold mr-3">${{ "%.2f"|format(order.total_amount) }}</span>
+                                <span class="px-2 py-1 rounded text-xs bg-gray-800">{{ order.status }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Recent Reservations -->
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="text-lg font-bold text-white mb-4">Upcoming Reservations</h3>
+                    <div class="space-y-3">
+                        {% for res in reservations[:5] %}
+                        <div class="flex justify-between items-center text-sm border-b border-gray-700/30 pb-2 last:border-0">
+                            <div>
+                                <span class="text-white">Table {{ res.table.table_number }}</span>
+                                <span class="text-gray-500 ml-2">by {{ res.user.username }}</span>
+                            </div>
+                            <div class="text-right text-gray-300">
+                                <span>{{ res.date }}</span> @ <span>{{ res.time }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

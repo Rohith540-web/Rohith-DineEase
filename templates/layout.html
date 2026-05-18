@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Rohith's DineEase | Premium Dining Experience{% endblock %}</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="antialiased">
+
+    <!-- Loading Overlay -->
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="fixed w-full z-50 glass border-b border-gray-800/50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20">
+                <div class="flex items-center">
+                    <a href="{{ url_for('home') }}" class="flex-shrink-0 flex items-center gap-3">
+                        <div class="h-14 w-14 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)] flex-shrink-0 bg-white">
+                            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-full w-full object-cover object-center scale-150">
+                        </div>
+                        <span class="font-serif text-2xl font-bold tracking-wider text-white">Rohith's Dine<span class="text-gradient-gold">Ease</span></span>
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{{ url_for('home') }}" class="text-gray-300 hover:text-[#D4AF37] px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
+                    <a href="{{ url_for('menu') }}" class="text-gray-300 hover:text-[#D4AF37] px-3 py-2 rounded-md text-sm font-medium transition-colors">Menu</a>
+                    <a href="{{ url_for('booking') }}" class="text-gray-300 hover:text-[#D4AF37] px-3 py-2 rounded-md text-sm font-medium transition-colors">Book a Table</a>
+                    
+                    <!-- Cart Icon -->
+                    <a href="{{ url_for('cart') }}" class="relative text-gray-300 hover:text-[#D4AF37] px-3 py-2 rounded-md text-xl transition-colors">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-badge" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-black bg-[#D4AF37] rounded-full transform translate-x-1/4 -translate-y-1/4 {% if cart_count == 0 %}hidden{% endif %}">{{ cart_count }}</span>
+                    </a>
+
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'admin' %}
+                            <!-- Admin Three-Line Menu -->
+                            <div class="relative group">
+                                <button class="text-[#D4AF37] hover:text-white px-3 py-2 rounded-md text-xl transition-colors focus:outline-none flex items-center gap-2">
+                                    <i class="fas fa-bars"></i>
+                                </button>
+                                <div class="absolute right-0 w-56 mt-2 py-2 glass border border-[#D4AF37]/30 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                                    <div class="px-4 py-3 border-b border-gray-700/50 mb-1 bg-black/40">
+                                        <p class="text-xs text-[#D4AF37] uppercase tracking-wider font-bold"><i class="fas fa-shield-alt mr-1"></i> Private Admin Space</p>
+                                    </div>
+                                    <a href="{{ url_for('admin_dashboard') }}" class="block px-4 py-2 text-sm text-gray-200 hover:text-[#D4AF37] hover:bg-white/10 transition-colors"><i class="fas fa-chart-line w-6"></i> Admin Dashboard</a>
+                                    <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/10 transition-colors"><i class="fas fa-sign-out-alt w-6"></i> Secure Logout</a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <a href="{{ url_for('dashboard') }}" class="text-[#D4AF37] hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"><i class="fas fa-user-circle mr-1"></i> Dashboard</a>
+                            <a href="{{ url_for('logout') }}" class="btn-outline text-sm ml-2">Logout</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Login</a>
+                        <a href="{{ url_for('register') }}" class="btn-primary text-sm ml-2 px-4 py-2">Register</a>
+                    {% endif %}
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden glass border-t border-gray-800">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="{{ url_for('home') }}" class="text-gray-300 hover:text-[#D4AF37] block px-3 py-2 rounded-md text-base font-medium">Home</a>
+                <a href="{{ url_for('menu') }}" class="text-gray-300 hover:text-[#D4AF37] block px-3 py-2 rounded-md text-base font-medium">Menu</a>
+                <a href="{{ url_for('booking') }}" class="text-gray-300 hover:text-[#D4AF37] block px-3 py-2 rounded-md text-base font-medium">Book a Table</a>
+                <a href="{{ url_for('cart') }}" class="text-gray-300 hover:text-[#D4AF37] block px-3 py-2 rounded-md text-base font-medium">Cart ({{ cart_count }})</a>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="text-[#D4AF37] hover:text-white block px-3 py-2 rounded-md text-base font-bold">Admin Dashboard</a>
+                    {% else %}
+                        <a href="{{ url_for('dashboard') }}" class="text-[#D4AF37] hover:text-white block px-3 py-2 rounded-md text-base font-bold"><i class="fas fa-user-circle mr-1"></i> Dashboard</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="text-red-400 hover:text-red-300 block px-3 py-2 rounded-md text-base font-medium">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="text-gray-300 hover:text-[#D4AF37] block px-3 py-2 rounded-md text-base font-medium">Login</a>
+                    <a href="{{ url_for('register') }}" class="text-gray-300 hover:text-[#D4AF37] block px-3 py-2 rounded-md text-base font-medium">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="fixed top-24 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 rounded-lg p-4 shadow-lg border {% if category == 'success' %}bg-green-900/50 border-green-500 text-green-200{% elif category == 'danger' %}bg-red-900/50 border-red-500 text-red-200{% else %}bg-blue-900/50 border-blue-500 text-blue-200{% endif %} glass flex items-center justify-between animate-fade-in">
+                        <span>{{ message }}</span>
+                        <button onclick="this.parentElement.style.display='none'" class="text-current hover:opacity-75 focus:outline-none">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="min-h-screen pt-20">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass border-t border-gray-800 mt-20 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div class="col-span-1 md:col-span-1">
+                    <span class="font-serif text-2xl font-bold tracking-wider text-white mb-6 flex items-center gap-3">
+                        <div class="h-12 w-12 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)] flex-shrink-0 bg-white">
+                            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="h-full w-full object-cover object-center scale-150">
+                        </div>
+                        Rohith's Dine<span class="text-gradient-gold">Ease</span>
+                    </span>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-6">Experience culinary excellence in a luxurious setting. Pre-order your favorite meals and reserve your table seamlessly.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-[#D4AF37] transition-colors text-xl"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-[#D4AF37] transition-colors text-xl"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-[#D4AF37] transition-colors text-xl"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="{{ url_for('home') }}" class="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">Home</a></li>
+                        <li><a href="{{ url_for('menu') }}" class="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">Menu</a></li>
+                        <li><a href="{{ url_for('booking') }}" class="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">Book Table</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Contact Us</h4>
+                    <ul class="space-y-3 text-sm text-gray-400">
+                        <li class="flex items-center gap-3"><i class="fas fa-map-marker-alt text-[#D4AF37]"></i> 123 Luxury Ave, Food City, NY 10001</li>
+                        <li class="flex items-center gap-3"><i class="fas fa-phone text-[#D4AF37]"></i> +1 (555) 123-4567</li>
+                        <li class="flex items-center gap-3"><i class="fas fa-envelope text-[#D4AF37]"></i> reservations@dineease.com</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Newsletter</h4>
+                    <p class="text-gray-400 text-sm mb-4">Subscribe for special offers and culinary updates.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Your email address" class="input-glass w-full px-4 py-2 rounded-l-md text-sm">
+                        <button type="submit" class="bg-[#D4AF37] text-black px-4 py-2 rounded-r-md hover:bg-[#FFDF00] transition-colors font-medium">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                <p>&copy; 2026 Rohith's DineEase. All rights reserved.</p>
+                <div class="space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            var menu = document.getElementById('mobile-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
