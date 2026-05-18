@@ -100,17 +100,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableInput = document.getElementById('selected_table_id');
     const tableDisplay = document.getElementById('selected-table-display');
     const dateInput = document.querySelector('input[name="date"]');
-    const timeInput = document.querySelector('input[name="time"]');
+    const timeInput = document.querySelector('select[name="time"]');
+
+    function timeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
 
     function updateTableAvailability() {
         if (!dateInput || !timeInput || !window.existingReservations) return;
         const selectedDate = dateInput.value;
         const selectedTime = timeInput.value;
         
+        if (!selectedDate || !selectedTime) return;
+        
+        const selectedMins = timeToMinutes(selectedTime);
+        
         tableNodes.forEach(node => {
             const tableId = parseInt(node.dataset.id);
-            // Check if this table is booked for the selected date and time
-            const isBooked = window.existingReservations.some(r => r.table_id === tableId && r.date === selectedDate && r.time === selectedTime);
+            // Check if this table is booked within 60 minutes of the selected time on the same date
+            const isBooked = window.existingReservations.some(r => {
+                if (r.table_id !== tableId || r.date !== selectedDate) return false;
+                const resMins = timeToMinutes(r.time);
+                // A booking blocks the table for 60 minutes (1 hour)
+                return Math.abs(resMins - selectedMins) < 60;
+            });
             
             if (isBooked) {
                 node.classList.remove('table-available');
