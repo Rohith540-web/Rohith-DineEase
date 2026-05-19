@@ -83,7 +83,6 @@ def menu():
     return render_template('menu.html', foods=foods, categories=categories)
 
 @app.route('/booking', methods=['GET', 'POST'])
-@login_required
 def booking():
     if request.method == 'POST':
         date = request.form.get('date')
@@ -158,7 +157,6 @@ def update_cart(food_id):
     return jsonify({'success': True, 'cart_count': sum(cart.values()), 'new_total': total})
 
 @app.route('/checkout', methods=['POST'])
-@login_required
 def checkout():
     cart = session.get('cart', {})
     if not cart:
