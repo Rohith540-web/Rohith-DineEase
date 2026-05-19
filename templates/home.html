@@ -76,7 +76,7 @@
                     <h3 class="text-xl font-bold text-white mb-2 font-serif">{{ food.name }}</h3>
                     <p class="text-gray-400 text-sm mb-6 line-clamp-2">{{ food.description }}</p>
                     <div class="flex justify-between items-center">
-                        <span class="text-2xl font-bold text-gradient-gold">${{ "%.2f"|format(food.price) }}</span>
+                        <span class="text-2xl font-bold text-gradient-gold">₹{{ "%.2f"|format(food.price) }}</span>
                         <button data-id="{{ food.id }}" class="add-to-cart-btn w-10 h-10 rounded-full bg-white/5 hover:bg-[#D4AF37] border border-white/10 hover:border-[#D4AF37] flex items-center justify-center transition-all group-hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] text-white hover:text-black">
                             <i class="fas fa-plus"></i>
                         </button>

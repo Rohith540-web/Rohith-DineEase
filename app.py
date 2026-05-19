@@ -20,7 +20,7 @@ db.init_app(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-login_manager.login_message = 'It is not accessible for general public'
+login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'warning'
 
 @login_manager.user_loader
@@ -83,6 +83,7 @@ def menu():
     return render_template('menu.html', foods=foods, categories=categories)
 
 @app.route('/booking', methods=['GET', 'POST'])
+@login_required
 def booking():
     if request.method == 'POST':
         date = request.form.get('date')
@@ -157,6 +158,7 @@ def update_cart(food_id):
     return jsonify({'success': True, 'cart_count': sum(cart.values()), 'new_total': total})
 
 @app.route('/checkout', methods=['POST'])
+@login_required
 def checkout():
     cart = session.get('cart', {})
     if not cart:
@@ -212,8 +214,8 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
         user = User.query.filter_by(email=email).first()
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
@@ -228,9 +230,9 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         
         # Check if user exists
