@@ -8,8 +8,14 @@ from datetime import datetime
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dineease_super_secret_key_12345'
 
+# Use external Database if provided (e.g. Supabase, Vercel Postgres)
+if os.environ.get('DATABASE_URL'):
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 # Vercel provides a read-only filesystem, except for /tmp
-if os.environ.get('VERCEL') == '1':
+elif os.environ.get('VERCEL') == '1':
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/dineease.db'
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dineease.db'
