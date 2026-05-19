@@ -264,7 +264,7 @@ def add_food():
         return redirect(url_for('home'))
     
     name = request.form.get('name')
-    description = request.form.get('description')
+    description = request.form.get('description', '')
     price = request.form.get('price')
     category = request.form.get('category')
     image_url = request.form.get('image_url')
