@@ -271,9 +271,15 @@ def add_food():
     diet_type = request.form.get('diet_type')
     
     food = FoodItem(name=name, description=description, price=float(price), category=category, image_url=image_url, diet_type=diet_type)
-    db.session.add(food)
-    db.session.commit()
-    flash('Food item added!', 'success')
+    try:
+        db.session.add(food)
+        db.session.commit()
+        flash('Food item added!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error adding item: {str(e)}', 'danger')
+        print("Add food error:", e)
+        
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/delete_food/<int:id>', methods=['POST'])
