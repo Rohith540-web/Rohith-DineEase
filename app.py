@@ -91,6 +91,10 @@ def menu():
 @app.route('/booking', methods=['GET', 'POST'])
 def booking():
     if request.method == 'POST':
+        if not current_user.is_authenticated:
+            flash('Please log in to book a table.', 'warning')
+            return redirect(url_for('login'))
+            
         date = request.form.get('date')
         time = request.form.get('time')
         guests = request.form.get('guests')
@@ -164,6 +168,10 @@ def update_cart(food_id):
 
 @app.route('/checkout', methods=['POST'])
 def checkout():
+    if not current_user.is_authenticated:
+        flash('Please log in to make a payment.', 'warning')
+        return redirect(url_for('login'))
+        
     cart = session.get('cart', {})
     if not cart:
         flash('Your cart is empty', 'warning')
