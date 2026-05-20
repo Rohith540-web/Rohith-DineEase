@@ -84,7 +84,7 @@ def home():
 
 @app.route('/menu')
 def menu():
-    categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Beverage']
+    categories = ['Breakfast', 'Lunch', 'Dinner', 'Desserts', 'Beverages']
     foods = FoodItem.query.filter_by(is_deleted=False).all()
     return render_template('menu.html', foods=foods, categories=categories)
 

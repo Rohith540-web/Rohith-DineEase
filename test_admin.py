@@ -1,0 +1,11 @@
+import urllib.request, urllib.parse, http.cookiejar, re
+cj = http.cookiejar.CookieJar()
+opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+data = urllib.parse.urlencode({'email': 'admin@dineease.com', 'password': 'admin123'}).encode()
+req = urllib.request.Request('https://rohith-food.vercel.app/login', data=data)
+opener.open(req)
+req = urllib.request.Request('https://rohith-food.vercel.app/admin_dashboard')
+resp = opener.open(req)
+html = resp.read().decode('utf-8', errors='ignore')
+items = re.findall(r'<td class="px-6 py-4 font-medium text-white">(.*?)</td>', html)
+print('Active Items:', items)
