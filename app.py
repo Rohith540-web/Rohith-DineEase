@@ -282,6 +282,30 @@ def add_food():
         
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/edit_food/<int:id>', methods=['POST'])
+@login_required
+def edit_food(id):
+    if current_user.role != 'admin':
+        return redirect(url_for('home'))
+        
+    food = FoodItem.query.get_or_404(id)
+    food.name = request.form.get('name')
+    food.description = request.form.get('description', '')
+    food.price = float(request.form.get('price'))
+    food.category = request.form.get('category')
+    food.image_url = request.form.get('image_url')
+    food.diet_type = request.form.get('diet_type')
+    
+    try:
+        db.session.commit()
+        flash('Food item updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating item: {str(e)}', 'danger')
+        print("Edit food error:", e)
+        
+    return redirect(url_for('admin_dashboard'))
+
 @app.route('/admin/delete_food/<int:id>', methods=['POST'])
 @login_required
 def delete_food(id):
