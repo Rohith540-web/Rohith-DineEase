@@ -424,5 +424,30 @@ def initdb():
     db.session.commit()
     return "Database Initialized! <a href='/'>Go to Home</a>"
 
+@app.route('/upgrade_db')
+def upgrade_db():
+    try:
+        from sqlalchemy import text
+        
+        # Add created_at
+        try:
+            db.session.execute(text('ALTER TABLE reservation ADD COLUMN created_at TIMESTAMP'))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print("created_at column error (might already exist):", e)
+            
+        # Add cancelled_at
+        try:
+            db.session.execute(text('ALTER TABLE reservation ADD COLUMN cancelled_at TIMESTAMP'))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print("cancelled_at column error (might already exist):", e)
+            
+        return "Database upgraded successfully! <a href='/'>Go to Home</a>"
+    except Exception as e:
+        return f"Upgrade Error: {str(e)}"
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
