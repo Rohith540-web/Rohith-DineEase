@@ -205,7 +205,44 @@ def dashboard():
         return redirect(url_for('admin_dashboard'))
     reservations = Reservation.query.filter_by(user_id=current_user.id).all()
     orders = Order.query.filter_by(user_id=current_user.id).all()
+    
+    now = datetime.now()
+    for res in reservations:
+        try:
+            res_datetime_str = f"{res.date} {res.time}"
+            res_datetime = datetime.strptime(res_datetime_str, "%Y-%m-%d %H:%M")
+            time_diff = res_datetime - now
+            res.can_cancel = time_diff.total_seconds() > 3600 and res.status == 'confirmed'
+        except Exception:
+            res.can_cancel = False
+            
     return render_template('dashboard.html', reservations=reservations, orders=orders)
+
+@app.route('/cancel_reservation/<int:id>', methods=['POST'])
+@login_required
+def cancel_reservation(id):
+    reservation = Reservation.query.get_or_404(id)
+    
+    if reservation.user_id != current_user.id:
+        flash('Unauthorized action.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    try:
+        now = datetime.now()
+        res_datetime_str = f"{reservation.date} {reservation.time}"
+        res_datetime = datetime.strptime(res_datetime_str, "%Y-%m-%d %H:%M")
+        time_diff = res_datetime - now
+        
+        if time_diff.total_seconds() > 3600 and reservation.status == 'confirmed':
+            reservation.status = 'cancelled'
+            db.session.commit()
+            flash('Reservation cancelled successfully.', 'success')
+        else:
+            flash('Reservations can only be cancelled at least 1 hour in advance.', 'warning')
+    except Exception as e:
+        flash('Error processing cancellation.', 'danger')
+        
+    return redirect(url_for('dashboard'))
 
 @app.route('/admin_dashboard')
 @login_required
