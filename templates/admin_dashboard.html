@@ -177,6 +177,7 @@
                             <div>
                                 <span class="text-white">Order #{{ order.id }}</span>
                                 <span class="text-gray-500 ml-2">by {{ order.user.username }}</span>
+                                <div class="text-xs text-gray-400 mt-1">Placed: {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
                             </div>
                             <div class="text-right">
                                 <span class="text-[#D4AF37] font-bold mr-3">₹{{ "%.2f"|format(order.total_amount) }}</span>
@@ -189,16 +190,21 @@
 
                 <!-- Recent Reservations -->
                 <div class="glass-card p-6 rounded-2xl">
-                    <h3 class="text-lg font-bold text-white mb-4">Upcoming Reservations</h3>
+                    <h3 class="text-lg font-bold text-white mb-4">Reservations</h3>
                     <div class="space-y-3">
                         {% for res in reservations[:5] %}
                         <div class="flex justify-between items-center text-sm border-b border-gray-700/30 pb-2 last:border-0">
                             <div>
                                 <span class="text-white">Table {{ res.table.table_number }}</span>
                                 <span class="text-gray-500 ml-2">by {{ res.user.username }}</span>
+                                <div class="text-xs text-gray-400 mt-1">
+                                    {% if res.created_at %}Booked: {{ res.created_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+                                    {% if res.status == 'cancelled' and res.cancelled_at %} | Cancelled: {{ res.cancelled_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+                                </div>
                             </div>
                             <div class="text-right text-gray-300">
                                 <span>{{ res.date }}</span> @ <span>{{ res.time }}</span>
+                                <div class="text-xs mt-1 {% if res.status == 'cancelled' %}text-red-400{% else %}text-green-400{% endif %}">{{ res.status | capitalize }}</div>
                             </div>
                         </div>
                         {% endfor %}

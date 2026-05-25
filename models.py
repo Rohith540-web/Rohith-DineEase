@@ -40,6 +40,8 @@ class Reservation(db.Model):
     time = db.Column(db.String(50), nullable=False) # Store as string HH:MM
     guests = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(50), default='confirmed')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    cancelled_at = db.Column(db.DateTime, nullable=True)
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)

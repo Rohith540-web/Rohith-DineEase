@@ -235,6 +235,7 @@ def cancel_reservation(id):
         
         if time_diff.total_seconds() > 3600 and reservation.status == 'confirmed':
             reservation.status = 'cancelled'
+            reservation.cancelled_at = datetime.utcnow()
             db.session.commit()
             flash('Reservation cancelled successfully.', 'success')
         else:
