@@ -173,15 +173,46 @@
                     <h3 class="text-lg font-bold text-white mb-4">Recent Orders</h3>
                     <div class="space-y-3">
                         {% for order in orders[:5] %}
-                        <div class="flex justify-between items-center text-sm border-b border-gray-700/30 pb-2 last:border-0">
+                        <div class="flex justify-between items-center text-sm border-b border-gray-700/30 pb-2 last:border-0 relative">
                             <div>
                                 <span class="text-white">Order #{{ order.id }}</span>
                                 <span class="text-gray-500 ml-2">by {{ order.user.username }}</span>
                                 <div class="text-xs text-gray-400 mt-1">Placed: {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
                             </div>
-                            <div class="text-right">
-                                <span class="text-[#D4AF37] font-bold mr-3">₹{{ "%.2f"|format(order.total_amount) }}</span>
-                                <span class="px-2 py-1 rounded text-xs bg-gray-800">{{ order.status }}</span>
+                            <div class="text-right flex items-center gap-3">
+                                <div>
+                                    <span class="text-[#D4AF37] font-bold mr-3">₹{{ "%.2f"|format(order.total_amount) }}</span>
+                                    <span class="px-2 py-1 rounded text-xs bg-gray-800">{{ order.status }}</span>
+                                </div>
+                                <button onclick="openCustomerModal('order-details-{{ order.id }}')" class="text-gray-400 hover:text-white p-2 ml-2 transition-colors">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden data for modal -->
+                        <div id="order-details-{{ order.id }}" class="hidden">
+                            <div class="border-b border-gray-700/50 pb-4 mb-4">
+                                <h4 class="text-[#D4AF37] font-bold mb-2">Customer Info</h4>
+                                <p class="text-gray-300"><span class="text-gray-500">ID:</span> {{ order.user.id }}</p>
+                                <p class="text-gray-300"><span class="text-gray-500">Name:</span> {{ order.user.username }}</p>
+                                <p class="text-gray-300"><span class="text-gray-500">Email:</span> {{ order.user.email }}</p>
+                            </div>
+                            <div>
+                                <h4 class="text-[#D4AF37] font-bold mb-2">Order Summary</h4>
+                                <p class="text-gray-300 mb-3"><span class="text-gray-500">Status:</span> {{ order.status }} | <span class="text-gray-500">Placed:</span> {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                <ul class="space-y-2">
+                                    {% for item in order.items %}
+                                    <li class="flex justify-between text-sm text-gray-400">
+                                        <span>{{ item.quantity }}x {{ item.food_item.name }}</span>
+                                        <span>₹{{ "%.2f"|format(item.price * item.quantity) }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                <div class="mt-4 pt-4 border-t border-gray-700/50 flex justify-between font-bold text-white">
+                                    <span>Total Amount</span>
+                                    <span class="text-[#D4AF37]">₹{{ "%.2f"|format(order.total_amount) }}</span>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -193,7 +224,7 @@
                     <h3 class="text-lg font-bold text-white mb-4">Reservations</h3>
                     <div class="space-y-3">
                         {% for res in reservations[:5] %}
-                        <div class="flex justify-between items-center text-sm border-b border-gray-700/30 pb-2 last:border-0">
+                        <div class="flex justify-between items-center text-sm border-b border-gray-700/30 pb-2 last:border-0 relative">
                             <div>
                                 <span class="text-white">Table {{ res.table.table_number }}</span>
                                 <span class="text-gray-500 ml-2">by {{ res.user.username }}</span>
@@ -202,9 +233,34 @@
                                     {% if res.status == 'cancelled' and res.cancelled_at %} | Cancelled: {{ res.cancelled_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
                                 </div>
                             </div>
-                            <div class="text-right text-gray-300">
-                                <span>{{ res.date }}</span> @ <span>{{ res.time }}</span>
-                                <div class="text-xs mt-1 {% if res.status == 'cancelled' %}text-red-400{% else %}text-green-400{% endif %}">{{ res.status | capitalize }}</div>
+                            <div class="text-right text-gray-300 flex items-center gap-3">
+                                <div>
+                                    <span>{{ res.date }}</span> @ <span>{{ res.time }}</span>
+                                    <div class="text-xs mt-1 {% if res.status == 'cancelled' %}text-red-400{% else %}text-green-400{% endif %}">{{ res.status | capitalize }}</div>
+                                </div>
+                                <button onclick="openCustomerModal('res-details-{{ res.id }}')" class="text-gray-400 hover:text-white p-2 ml-2 transition-colors">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden data for modal -->
+                        <div id="res-details-{{ res.id }}" class="hidden">
+                            <div class="border-b border-gray-700/50 pb-4 mb-4">
+                                <h4 class="text-[#D4AF37] font-bold mb-2">Customer Info</h4>
+                                <p class="text-gray-300"><span class="text-gray-500">ID:</span> {{ res.user.id }}</p>
+                                <p class="text-gray-300"><span class="text-gray-500">Name:</span> {{ res.user.username }}</p>
+                                <p class="text-gray-300"><span class="text-gray-500">Email:</span> {{ res.user.email }}</p>
+                            </div>
+                            <div>
+                                <h4 class="text-[#D4AF37] font-bold mb-2">Reservation Details</h4>
+                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                    <p class="text-gray-300"><span class="text-gray-500 block">Table</span> {{ res.table.table_number }}</p>
+                                    <p class="text-gray-300"><span class="text-gray-500 block">Guests</span> {{ res.guests }}</p>
+                                    <p class="text-gray-300"><span class="text-gray-500 block">Date</span> {{ res.date }}</p>
+                                    <p class="text-gray-300"><span class="text-gray-500 block">Time</span> {{ res.time }}</p>
+                                    <p class="text-gray-300"><span class="text-gray-500 block">Status</span> <span class="{% if res.status == 'cancelled' %}text-red-400{% else %}text-green-400{% endif %}">{{ res.status | capitalize }}</span></p>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -252,7 +308,33 @@
     </div>
 </div>
 
+<!-- Customer Details Modal -->
+<div id="customerDetailsModal" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg p-6 rounded-2xl relative animate-scale-up">
+        <button onclick="closeCustomerModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+        <h3 class="text-2xl font-serif font-bold text-white mb-6">Customer Details</h3>
+        
+        <div id="customerDetailsContent">
+            <!-- Content will be injected here via JS -->
+        </div>
+        
+        <button onclick="closeCustomerModal()" class="btn-primary w-full text-sm py-2 mt-6">Close</button>
+    </div>
+</div>
+
 <script>
+    function openCustomerModal(dataId) {
+        const contentHtml = document.getElementById(dataId).innerHTML;
+        document.getElementById('customerDetailsContent').innerHTML = contentHtml;
+        document.getElementById('customerDetailsModal').classList.remove('hidden');
+    }
+
+    function closeCustomerModal() {
+        document.getElementById('customerDetailsModal').classList.add('hidden');
+    }
+
     function openEditModal(id, name, price, category, diet, image, description) {
         document.getElementById('editFoodModal').classList.remove('hidden');
         
